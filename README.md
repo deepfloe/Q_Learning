@@ -18,8 +18,9 @@ Here's an example code for Cliff Walking:
     print(q.evaluate(max_steps=99, episodes= 1))
     q.produce_gif(max_steps=99)
 ```
-## Next Steps
-1. Generalize the class so it can handle tuples of Discrete spaces
-2. Implement a custom gym environment and use the training pipeline on it
-## Current issues
-It would make sense to make Qtable a subclass of `Gym.env`, but this class does not have a constructor method, objects are created by `gym.make()`. So, I am not sure what is the best way to subclass, as I cannot call `super().__init__()`.
+### Dice Game and double Q learning
+The repo also contains an implementation of a custom Gym environment called `dice.py`. The agent rolls a die and sums its number. When the agent rolls a six, the game finishes with no reward. If the agent decides to terminate, it gets the current sum as a reward. This is an example where the reward is not deterministic, a setting where classical Q-learning is known to overerstimate Q-values.
+
+The file `doubleQ.py` implements the original double Q learning algorithm from the original [Hasselt](https://papers.nips.cc/paper_files/paper/2010/file/091d584fced301b442654dd8c23b3fc9-Paper.pdf) paper.
+
+
