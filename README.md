@@ -6,13 +6,13 @@ We implement a class to facilitate training, evaluation and visualizations for Q
 You need to install the packages gym and imageio for visualization
 In the file `training_pipeline.py`, proceed as follows
 1. Define a gym environment with `gym.make()`
-2. Create a Qtable instance
-3. Use the Qtable methods `train()`, `evaluate()` and `produce_animation()`
+2. Create a QAgent instance
+3. Use the QAgent methods `train()`, `evaluate()` and `produce_animation()`
 
 Here's an example code for Cliff Walking:
 ```python
     env = gym.make('CliffWalking-v0')
-    q = Qtable(env)
+    q = QAgent(env)
     q.train(max_steps=99, epsilon_max=1.0, epsilon_min=0.05, gamma=0.95,
             learning_rate= 0.7, episodes=90, decay_rate=0.005)
     print(q.evaluate(max_steps=99, episodes= 1))
