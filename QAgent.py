@@ -2,7 +2,7 @@ import numpy as np
 import gym
 import imageio
 import pathlib
-class Qtable:
+class QAgent:
     ''' This class facilitates the training, evaluation and visualization of Q learning tasks in gym.
 
      The rows of the Q table represent states of the environment while columns represent possible actions of the agent.
@@ -123,7 +123,7 @@ class Qtable:
 
 if __name__ == "__main__":
     env = gym.make('CliffWalking-v0')
-    q = Qtable(env)
+    q = QAgent(env)
     q.train(max_steps=99, epsilon_max=1.0, epsilon_min=0.05, gamma=0.95, learning_rate= 0.7, episodes=90, decay_rate=0.005)
     print(q.evaluate(max_steps=99, episodes= 1))
     #q.produce_gif(max_steps=99)
