@@ -1,7 +1,13 @@
 import numpy as np
 import  gym
-from doubleQ import DQAgent
+from q_agent_original import QAgentOriginal
+from q_agent_double import QAgentDouble
+
+
 class Dice(gym.Env):
+    '''Gym implementation of the following game:
+The agent rolls a die and sum its number of eyes in each turn. When the agent rolls a six, the game finishes with no reward. If the agent decides to terminate, it gets the current sum as a reward.
+    '''
     def __init__(self, render_mode =None):
 
         self.observation_space = gym.spaces.Discrete(100)
@@ -37,54 +43,36 @@ class Dice(gym.Env):
 
     def render(self):
         return
+def create_baseline_agent(threshold):
+    '''Roll while the sum is below the threshold. This strategy is implemented via a Q table, which cannot be interpreted as a table of expected rewards in this case.
+    '''
+    env = Dice()
+    baseline = QAgentOriginal(env)
+    for i in range(threshold):
+        baseline.Q[i,0] = 1
+    for i in range(threshold,100):
+        baseline.Q[i,1] = 1
 
-class Baseline:
-    def __init__(self, threshold):
-        self.sum = 0
-        self.threshold = threshold
+    return baseline
 
-    def roll_again(self):
-        dice = np.random.randint(low=1, high= 7)
-        if dice == 6:
-            done = True
-            self.sum = 0
-        else:
-            done = False
-            self.sum += dice
-        return done
-
-    def reset(self):
-        self.sum = 0
-
-    def play(self):
-        self.reset()
-        while self.sum<self.threshold:
-            if self.roll_again():
-                break
-        return self.sum
-
-    def evaluate(self, episodes):
-        return np.array([self.play() for _ in range(episodes)])
 
 def best_strategy():
     mean_rewards = []
     for i in range(99):
-        env2 = Baseline(i)
-        rewards = env2.evaluate(episodes=1000)
+        baseline = create_baseline_agent(i)
+        rewards = baseline.evaluate(episodes=1000)
         mean_rewards.append(np.mean(rewards))
     return np.max(mean_rewards)
 
-#env = Dice()
-#q = QAgent(env)
-#q.train(max_steps=99, epsilon_max=1.0, epsilon_min=0.05, gamma=0.95, learning_rate=0.7, episodes=10000, decay_rate=0.005)
-#print(np.mean(q.evaluate(max_steps=99, episodes = 1000)))
-env = Dice()
-q = DQAgent(env)
-q.train(max_steps=99, gamma=0.95, learning_rate=0.6, episodes=10000)
-print(np.mean(q.evaluate(max_steps=99, episodes = 1000)))
+if __name__ == "__main__":
+    env = Dice()
+    q = QAgentOriginal(env)
+    q.train(max_steps=99, gamma=0.95, learning_rate=0.6, episodes=10000)
+    print("Single Q agent:",np.mean(q.evaluate(max_steps=99, episodes = 1000)))
 
+    q = QAgentDouble(env)
+    q.train(max_steps=99, gamma=0.95, learning_rate=0.6, episodes=10000)
+    print("Double Q agent:", np.mean(q.evaluate(max_steps=99, episodes = 1000)))
 
-
-#print(best_strategy())
-
-#print(np.mean(env2.evaluate(episodes=100)))
+    baseline = create_baseline_agent(17)
+    print("optimal strategy:",np.mean(baseline.evaluate(max_steps=99, episodes = 1000)))

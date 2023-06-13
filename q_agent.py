@@ -1,13 +1,24 @@
 import numpy as np
-
-class DQAgent:
+import gym
+class QAgent:
+    '''Abstract super class for different versions of Q learning.
+    This class facilitates the training, evaluation and visualization of Q learning tasks in gym.
+    The parameter 1-epsilon measures how explorative an agent is, which decays during training. We implement two decay behaviours for epsilon: an exponential decay and an inverse sq decay.
+    Attributes:
+    :env (gym.Env): a gym environment with discrete action and observation space (currently, tuples of discrete variables are not implemented)
+    :training_episodes:
+    :n_visits: a numpy that stores how many times a state has been visited. The inverse sq decay depends on that.
+   Methods:
+    :update: needs to be implemented in subclass
+    :greedy_policy: needs to be implemented in subclass
+    :epsilon_greedy_policy: pursue greedy policy with probability epsilon
+    :train: the agent interacts with the environment according to the epsilon greedy policy and updates the Qtable according to .update() method
+    :evaluate: return a list of rewards when the agent interacts with the environment according to greedy policy
     '''
-    should make an abstract superclass for the different agents
-     '''
     def __init__(self, env):
+
         n_rows = env.observation_space.n
-        n_cols = env.action_space.n
-        self.Q = np.zeros((2,n_rows, n_cols))
+        #n_cols = env.action_space.n
         self.env = env
         self.training_episodes = 0
         self.n_visits = np.zeros(n_rows)
@@ -30,14 +41,8 @@ class DQAgent:
         :returns done (Boolean): whether or not game has terminated
         :returns new_state: new state of environment after action has been performed
         '''
+        raise NotImplementedError
 
-        new_state, reward, done, info = self.env.step(action)
-        q = self.Q
-        i = np.random.randint(2)
-        j = (i+1)%2
-        action_optimal = np.argmax(q[i, new_state])
-        q[i,state,action] += learning_rate*(reward+gamma*q[j,new_state,action_optimal]-q[i,state,action])
-        return done, new_state
 
     def train(self, episodes, max_steps, learning_rate, gamma):
         '''Run a variable number training episodes to update the Qtable
@@ -56,7 +61,6 @@ class DQAgent:
             for step in range(max_steps):
                 self.n_visits[state] += 1
                 self.training_episodes += 1
-                #epsilon = self.epsilon_function_inverse_sq(state)
                 epsilon = self.epsilon_exp_decay(state)
                 action = self.epsilon_greedy_policy(state, epsilon)
                 done, new_state = self.update(state, action, gamma, learning_rate)
@@ -64,10 +68,10 @@ class DQAgent:
                     break
                 state = new_state
 
+
     def greedy_policy(self, state):
-        '''Take action which maximises q value (highest expected reward)'''
-        action = np.argmax(self.Q[0,state]+self.Q[1,state])
-        return action
+        raise NotImplementedError
+
 
     def epsilon_greedy_policy(self,  state, epsilon):
         '''With probabilty epsilon, take a random action, otherwise pursue greedy policy.'''
@@ -77,6 +81,7 @@ class DQAgent:
         else:
             action = self.env.action_space.sample()
         return action
+
 
     def evaluate(self, max_steps: int, episodes: int):
         '''Return a list of rewards when agents pursues a greedy policy.
